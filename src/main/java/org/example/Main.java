@@ -8,11 +8,54 @@ public class Main {
     private static final String user = "root";
     private static final String password = "1234";
     //    private static final String bbdd = "coches";
-    private static final String bbdd = "banco";
+    private static final String bbdd = "banca";
     private static final String urlConexion = urlServidorLocal + bbdd;
     //    private static final String urlConexion = urlServidorLocal;
 
     public static void main(String[] args) {
+
+        try (Connection cn = DriverManager.getConnection(urlServidorLocal, user, password)) {
+            Statement st = cn.createStatement();
+            Statement stUser1 = cn.createStatement();
+            Statement stUser2 = cn.createStatement();
+            Statement stNameUser = cn.createStatement();
+
+            String q1 = "CREATE DATABASE banca";
+            String q2 = "USE banca";
+
+            String c1 = "CREATE TABLE clientes (idCliente int auto_increment primary key, nombre varchar(45) not null, apellidos varchar(45) not null, antiguedad DATETIME not null);";
+            String c2 = "CREATE TABLE cuentas (idCuenta int auto_increment primary key, idCliente int not null, FOREIGN KEY (idCliente) REFERENCES clientes(idCliente) ON DELETE CASCADE ON UPDATE CASCADE, saldo FLOAT not null);";
+            String c3 = "CREATE TABLE transacciones (idTransaccion int auto_increment primary key, tipo varchar(45), idCuentaOrigen int not null, FOREIGN KEY (idCuentaOrigen) REFERENCES cuentas(idCuenta) ON DELETE CASCADE ON UPDATE CASCADE,  idCuentaDestino int not null, FOREIGN KEY (idCuentaDestino) REFERENCES cuentas(idCuenta) ON DELETE CASCADE ON UPDATE CASCADE, fecha DATETIME not null, saldoMovido FLOAT not null;";
+
+            String in1 = "INSERT INTO Usuarios (nombre, apellidos) VALUES ('Adrian', 'Gómez'), ('Enrique', 'López');";
+            String in2 = "INSERT INTO Videojuegos (nombre, genero, plataformas, PEGI, precio) VALUES ('The Legend of Zelda: Breath of the Wild', 'Aventura', 'Nintendo Switch', '12', 59.99), ('FIFA 22', 'Deportes', 'PlayStation 5, Xbox Series X', '3', 69.99);";
+            // Observaciones del videojuego 1
+            String o1 = "INSERT INTO Observaciones (idVideojuego, duracion, puntuacion, vecesJugado, idUsuario) VALUES (1, 50.5, 9.5, 100, 1), (1, 60.2, 8.0, 80, 2);";
+            // Observaciones del videojuego 2
+            String o2 = "INSERT INTO Observaciones (idVideojuego, duracion, puntuacion, vecesJugado, idUsuario) VALUES (2, 25.1, 7.5, 120, 1), (2, 30.0, 6.8, 90, 2);";
+
+
+// ------------------Una vez ejecutado por primera vez hay que comentar toda esta parte --------------------------------
+            st.execute(q1);
+// ---------------------------------------------------------------------------------------------------------------------
+            //Esta debe ejecutarse siempre para que seleccione la bbdd que hemos creado
+            st.execute(q2);
+
+// ------------------Una vez ejecutado por primera vez hay que comentar toda esta parte --------------------------------
+            st.execute(c1);
+            st.execute(c2);
+            st.execute(c3);
+            st.execute(in1);
+            st.execute(in2);
+            st.execute(o1);
+            st.execute(o2);
+
+
+
+        } catch
+        (SQLException e) {
+            e.printStackTrace();
+        }
 
 
         Connection cn = null;
@@ -42,9 +85,6 @@ public class Main {
             cs.setInt(2, saldoactual - saldoATransferir);
             cs.executeUpdate();
 
-            if (args[0] == "1") {
-                throw new SQLException();
-            }
 
             rs = st.executeQuery("SELECT * FROM cuentabancaria WHERE idcuentabancaria = 1");
             while (rs.next()) {
