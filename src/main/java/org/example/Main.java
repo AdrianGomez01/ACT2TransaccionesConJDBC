@@ -9,7 +9,7 @@ public class Main {
     private static final String user = "root";
     private static final String password = "1234";
     private static final String bbdd = "banca";
-    private static final String urlConexion = urlServidorLocal + bbdd;
+    private static final String urlConexion = "jdbc:mysql://localhost:3306/" + bbdd;
 
     public static void main(String[] args) {
 
@@ -27,7 +27,7 @@ public class Main {
             System.out.print("Seleccione una opción: ");
 
             opcion = scanner.nextInt();
-            scanner.nextLine(); // Consumir el salto de línea
+            scanner.nextLine();
 
             switch (opcion) {
                 case 1:
@@ -69,7 +69,6 @@ public class Main {
 
             String q1 = "CREATE DATABASE IF NOT EXISTS " + bbdd;
             String q2 = "USE " + bbdd;
-
             st.executeUpdate(q1);
             st.executeUpdate(q2);
 
@@ -113,7 +112,7 @@ public class Main {
         Connection cn = null;
 
         try {
-            cn = DriverManager.getConnection(urlServidorLocal, user, password);
+            cn = DriverManager.getConnection(urlConexion, user, password);
             cn.setAutoCommit(false);
 
             // Verifica los saldos por si son suficientes en la cuenta de origen
@@ -153,6 +152,7 @@ public class Main {
         }
     }
 
+
     // Método para obtener y actualizar los saldos
     private static double obtenerSaldoCuenta(Connection cn, int idCuenta) throws SQLException {
         String query = "SELECT saldo FROM cuentas WHERE idCuenta = ?";
@@ -191,7 +191,7 @@ public class Main {
 
     // Método para consultar el saldo de todas las cuentas de un cliente por su idCliente
     public static void consultarSaldoCliente(int idCliente) {
-        try (Connection cn = DriverManager.getConnection(urlServidorLocal, user, password)) {
+        try (Connection cn = DriverManager.getConnection(urlConexion, user, password)) {
             String query = "SELECT idCuenta, saldo FROM cuentas WHERE idCliente = ?";
             try (PreparedStatement ps = cn.prepareStatement(query)) {
                 ps.setInt(1, idCliente);
@@ -212,14 +212,19 @@ public class Main {
         }
     }
 
+
     // Método para consultar el historial de transacciones de una cuenta por su idCuenta
     public static void consultarHistorialTransacciones(int idCuenta) {
-        try (Connection cn = DriverManager.getConnection(urlServidorLocal, user, password)) {
+        Connection cn = null;
+
+        try {
+            cn = DriverManager.getConnection(urlConexion, user, password);
             String query = "SELECT * FROM transacciones WHERE idCuentaOrigen = ? OR idCuentaDestino = ?";
             try (PreparedStatement ps = cn.prepareStatement(query)) {
                 ps.setInt(1, idCuenta);
                 ps.setInt(2, idCuenta);
 
+                //Imprimo las transacciones por consola
                 try (ResultSet rs = ps.executeQuery()) {
                     System.out.println("Historial de transacciones de la cuenta " + idCuenta + ":");
                     while (rs.next()) {
@@ -249,7 +254,14 @@ public class Main {
         } catch (SQLException e) {
             System.err.println("Error al consultar el historial de transacciones: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            try {
+                if (cn != null) {
+                    cn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
-
